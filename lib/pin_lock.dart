@@ -49,7 +49,8 @@ class PinLock {
     Duration? lockAfterDuration,
     int? maxRetries,
     int? pinLength,
-    bool onlyLockStartup = false, 
+    bool lockOnBackground = true, 
+    bool lockOnNavigation = true, 
   }) =>
       AuthenticatorImpl(
         repository,
@@ -60,7 +61,8 @@ class PinLock {
         lockAfterDuration ?? const Duration(seconds: 5),
         pinLength ?? 4,
         userId,
-        onlyLockStartup: onlyLockStartup,
+        lockOnBackground: lockOnBackground,
+        lockOnNavigation: lockOnNavigation,
       );
 
   static Future<Authenticator> baseAuthenticator(String userId) async =>

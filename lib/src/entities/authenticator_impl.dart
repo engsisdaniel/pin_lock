@@ -26,7 +26,10 @@ class AuthenticatorImpl with WidgetsBindingObserver implements Authenticator {
   @override
   final UserId userId;
 
-  final bool onlyLockStartup;
+  final bool lockOnBackground;
+  final bool lockOnNavigation;
+
+  bool? _ignoreLock;
 
   AuthenticatorImpl(
     this._repository,
@@ -37,7 +40,10 @@ class AuthenticatorImpl with WidgetsBindingObserver implements Authenticator {
     this.lockAfterDuration,
     this.pinLength,
     this.userId,
-    {this.onlyLockStartup = false}
+    {
+      this.lockOnBackground = true,
+      this.lockOnNavigation = true,
+    }
   );
 
   @override
@@ -53,7 +59,7 @@ class AuthenticatorImpl with WidgetsBindingObserver implements Authenticator {
     super.didChangeAppLifecycleState(state);
 
     // don't do anything if pin is disabled
-    if (!(await isPinAuthenticationEnabled()) || onlyLockStartup) {
+    if (!(await isPinAuthenticationEnabled()) || lockOnBackground) {
       return;
     }
 
@@ -256,8 +262,11 @@ class AuthenticatorImpl with WidgetsBindingObserver implements Authenticator {
       await _repository.addFailedAttempt(DateTime.now(), forUser: userId);
       return const Left(LocalAuthFailure.wrongPin);
     }
-    await _repository.resetFailedAttempts(ofUser: userId);
+    await _repository.resetFailedAttempts(ofUser: userId);   
     _lockController.unlock();
+    if(!lockOnNavigation) {
+      _ignoreLock = true;
+    }
     _repository.clearLastPausedTimestamp();
     return const Right(unit);
   }
@@ -284,6 +293,9 @@ class AuthenticatorImpl with WidgetsBindingObserver implements Authenticator {
         );
         if (isSuccessful) {
           _lockController.unlock();
+          if(!lockOnNavigation) {
+            _ignoreLock = true;
+          } 
           return const Right(unit);
         }
         return const Left(LocalAuthFailure.biometricAuthenticationFailed);
@@ -319,6 +331,7 @@ class AuthenticatorImpl with WidgetsBindingObserver implements Authenticator {
   }
 
   Future<void> _checkInitialLockStatus() async {
+    if(_ignoreLock ?? false) return;
     final isEnabled = await isPinAuthenticationEnabled();
     if (!isEnabled) {
       _lockController.unlock();

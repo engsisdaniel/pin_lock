@@ -26,6 +26,8 @@ class AuthenticatorImpl with WidgetsBindingObserver implements Authenticator {
   @override
   final UserId userId;
 
+  final bool onlyLockStartup;
+
   AuthenticatorImpl(
     this._repository,
     this._biometricAuth,
@@ -35,6 +37,7 @@ class AuthenticatorImpl with WidgetsBindingObserver implements Authenticator {
     this.lockAfterDuration,
     this.pinLength,
     this.userId,
+    {this.onlyLockStartup = false}
   );
 
   @override
@@ -50,7 +53,7 @@ class AuthenticatorImpl with WidgetsBindingObserver implements Authenticator {
     super.didChangeAppLifecycleState(state);
 
     // don't do anything if pin is disabled
-    if (!(await isPinAuthenticationEnabled())) {
+    if (!(await isPinAuthenticationEnabled()) || onlyLockStartup) {
       return;
     }
 

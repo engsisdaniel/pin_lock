@@ -59,7 +59,7 @@ class AuthenticatorImpl with WidgetsBindingObserver implements Authenticator {
     super.didChangeAppLifecycleState(state);
 
     // don't do anything if pin is disabled
-    if (!(await isPinAuthenticationEnabled()) || lockOnBackground) {
+    if (!(await isPinAuthenticationEnabled()) || !lockOnBackground) {
       return;
     }
 

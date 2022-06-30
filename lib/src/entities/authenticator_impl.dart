@@ -29,6 +29,9 @@ class AuthenticatorImpl with WidgetsBindingObserver implements Authenticator {
   final bool lockOnBackground;
   final bool lockOnNavigation;
 
+  Future<String> get userPin async =>
+      (await _repository.getPin(forUser: userId))?.value;
+
   bool? _ignoreLock;
 
   AuthenticatorImpl(
@@ -39,12 +42,10 @@ class AuthenticatorImpl with WidgetsBindingObserver implements Authenticator {
     this.lockedOutDuration,
     this.lockAfterDuration,
     this.pinLength,
-    this.userId,
-    {
-      this.lockOnBackground = true,
-      this.lockOnNavigation = true,
-    }
-  );
+    this.userId, {
+    this.lockOnBackground = true,
+    this.lockOnNavigation = true,
+  });
 
   @override
   Stream<LockState> get lockState {
@@ -81,7 +82,6 @@ class AuthenticatorImpl with WidgetsBindingObserver implements Authenticator {
           final now = DateTime.now();
           if (now.millisecondsSinceEpoch - lastActive.millisecondsSinceEpoch >
               lockAfterDuration.inMilliseconds) {
-
             // Verifica se biometric está ativado
             final biometric = await getBiometricAuthenticationAvailability();
             if (biometric is Available) {
@@ -272,9 +272,9 @@ class AuthenticatorImpl with WidgetsBindingObserver implements Authenticator {
       await _repository.addFailedAttempt(DateTime.now(), forUser: userId);
       return const Left(LocalAuthFailure.wrongPin);
     }
-    await _repository.resetFailedAttempts(ofUser: userId);   
+    await _repository.resetFailedAttempts(ofUser: userId);
     _lockController.unlock();
-    if(!lockOnNavigation) {
+    if (!lockOnNavigation) {
       _ignoreLock = true;
     }
     _repository.clearLastPausedTimestamp();
@@ -303,9 +303,9 @@ class AuthenticatorImpl with WidgetsBindingObserver implements Authenticator {
         );
         if (isSuccessful) {
           _lockController.unlock();
-          if(!lockOnNavigation) {
+          if (!lockOnNavigation) {
             _ignoreLock = true;
-          } 
+          }
           return const Right(unit);
         }
         return const Left(LocalAuthFailure.biometricAuthenticationFailed);
@@ -341,7 +341,7 @@ class AuthenticatorImpl with WidgetsBindingObserver implements Authenticator {
   }
 
   Future<void> _checkInitialLockStatus() async {
-    if(_ignoreLock ?? false) return;
+    if (_ignoreLock ?? false) return;
     final isEnabled = await isPinAuthenticationEnabled();
     if (!isEnabled) {
       _lockController.unlock();

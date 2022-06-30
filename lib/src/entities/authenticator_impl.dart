@@ -29,7 +29,7 @@ class AuthenticatorImpl with WidgetsBindingObserver implements Authenticator {
   final bool lockOnBackground;
   final bool lockOnNavigation;
 
-  Future<String> get userPin async =>
+  Future<String?> get userPin async =>
       (await _repository.getPin(forUser: userId))?.value;
 
   bool? _ignoreLock;

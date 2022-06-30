@@ -33,7 +33,7 @@ abstract class Authenticator with WidgetsBindingObserver {
   /// this value can be hardcoded ([UserId('1')])
   UserId get userId;
 
-  Future<String> get userPin;
+  Future<String?> get userPin;
 
   /// Changes pin of user.
   /// Only happens if [oldPin] is correct and [newPin] matches [newPinConfirmation]
